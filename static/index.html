@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reacher · research paper review</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="sigil">R</span><b>Reacher</b><small>research paper review</small></div>
+  <div class="model" id="model"><i></i><span>connecting…</span></div>
+</header>
+
+<main>
+  <section id="v-upload" class="view">
+    <div class="hero">
+      <p class="eyebrow">A closer look at your research</p>
+      <h1>Research deserves<br>a <em>closer read.</em></h1>
+      <p class="lede">Reacher reviews your paper's argument, methods, and references, then ties potential issues to the passages that need another look.</p>
+    </div>
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept=".pdf,.docx,.txt,.md" multiple hidden>
+      <div class="scan"></div>
+      <div class="drop-in">
+        <div class="glyph">⇪</div>
+        <strong id="drop-title">Drop papers here</strong>
+        <span id="drop-sub">PDF, DOCX, TXT or MD · select one paper or a bundle</span>
+      </div>
+    </label>
+    <div class="opts">
+      <label class="check"><input type="checkbox" id="online" checked><span></span>Verify references against Crossref <small>(optional; sends references to Crossref)</small></label>
+      <button id="go" class="btn" disabled>Review my paper</button>
+    </div>
+    <p class="err" id="err"></p>
+    <div class="features" aria-label="What Reacher reviews">
+      <article><span>01</span><b>Arguments &amp; methods</b><p>Surface gaps in reasoning, evidence, and study design.</p></article>
+      <article><span>02</span><b>Passage-anchored notes</b><p>See the quoted text behind each potential issue.</p></article>
+      <article><span>03</span><b>Reference checks</b><p>Review citation consistency and optionally check Crossref.</p></article>
+    </div>
+  </section>
+
+  <section id="v-run" class="view" hidden>
+    <div class="run">
+      <div class="pct"><span id="pct">0</span><sup>%</sup></div>
+      <div class="bar"><i id="bar"></i></div>
+      <ol class="rail" id="rail"></ol>
+      <pre class="log" id="log"></pre>
+    </div>
+  </section>
+
+  <section id="v-result" class="view" hidden>
+    <section id="batch-overview" class="batch-overview" hidden>
+      <h2>Paper bundle</h2>
+      <p class="err" id="batch-error" role="alert"></p>
+    </section>
+    <div id="review-content">
+    <div class="rhead">
+      <div class="rtitle">
+        <p class="eyebrow" id="r-file"></p>
+        <h2 id="r-title"></h2>
+        <div class="counts" id="r-counts"></div>
+      </div>
+      <div class="rside">
+        <div class="stamp" id="r-stamp"></div>
+        <div class="btns">
+          <button class="btn ghost" id="x-md">Export .md</button>
+          <button class="btn ghost" id="x-json">Export .json</button>
+          <button class="btn ghost" id="x-new">New paper</button>
+        </div>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-t="review" class="on">Review</button>
+      <button data-t="summary">Summary</button>
+      <button data-t="cites">Citations</button>
+      <button data-t="ask">Ask the paper</button>
+    </nav>
+    <div id="t-review" class="tab split">
+      <article class="paper" id="paper"></article>
+      <aside class="panel">
+        <div class="verdict" id="verdict"></div>
+        <div class="filters" id="filters"></div>
+        <div id="cards"></div>
+      </aside>
+    </div>
+    <div id="t-summary" class="tab" hidden></div>
+    <div id="t-cites" class="tab" hidden></div>
+    <section id="t-ask" class="tab ask-view" hidden>
+      <header class="ask-heading">
+        <p class="eyebrow">Paper-grounded Q&amp;A</p>
+        <h2>Ask a question about this paper.</h2>
+        <p>Answers use relevant passages from the paper and include links back to their source text.</p>
+      </header>
+      <div id="ask-messages" class="ask-messages" aria-live="polite"></div>
+      <div id="ask-error" class="err" role="alert"></div>
+      <form id="ask-form" class="ask-form">
+        <label for="ask-input">Your question</label>
+        <textarea id="ask-input" maxlength="1000" rows="3" placeholder="For example: What are the main limitations of the study?" required></textarea>
+        <div class="ask-controls">
+          <small>Answers are based on the paper text, not external sources.</small>
+          <button id="ask-submit" class="btn" type="submit">Ask Reacher</button>
+        </div>
+      </form>
+    </section>
+    </div>
+  </section>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>

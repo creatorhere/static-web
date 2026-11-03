@@ -1,0 +1,27 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+credentials.json
+*service-account*.json
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# Python environment and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.log
+
+# Local data and uploaded research papers
+uploads/
+data/
+*.pdf
+*.docx
+*.sqlite3
+*.db
