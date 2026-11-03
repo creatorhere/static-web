@@ -1,72 +1,339 @@
 # Reacher
 
-Reacher is my semester project. I wanted a tool that could help me review research papers and point out issues in context, but I couldn't find one that worked the way I wanted. So I decided to build it for myself.
+**An AI-powered research paper reviewer that turns complex academic papers into structured, evidence-backed insights.**
 
-Upload one paper or a bundle and Reacher uses Gemma 4 to identify potential issues, anchor feedback to quoted passages, suggest fixes, summarise the paper, check its references, and answer follow-up questions using relevant paper passages. It's a study aid and first-pass reviewer, not a substitute for your own judgment.
+Reacher is an AI-assisted research paper analysis tool built to help students and researchers understand, evaluate, and review academic papers more effectively.
 
-Gemma 4 is called through the **Gemini API** (Google AI Studio), so there is nothing to download and no GPU is needed.
+Upload a research paper or a collection of papers, and Reacher uses Google's Gemma models through the Gemini API to analyse research methodology, identify potential weaknesses, evaluate claims, inspect references, generate summaries, and answer follow-up questions using relevant passages from the paper.
 
-## Setup
+Rather than simply generating a generic summary, Reacher focuses on **contextual analysis, evidence-grounded feedback, and research transparency.**
 
-1. Get a free API key at https://aistudio.google.com/apikey
-2. Copy `.env.example` to `.env` and paste the key:
-   ```
-   GEMINI_API_KEY=your_key_here
-   ```
-3. Install and run:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate        # Windows: .venv\Scripts\activate
-   pip install -r requirements.txt
-   python run.py
-   ```
+> Reacher is designed as a research and study assistant. Its findings should be independently verified and are not a replacement for expert peer review.
 
-The browser opens at http://127.0.0.1:8000. The status pill (top right) turns green when the key is loaded. Hover over it if it turns red.
+---
 
-## Models
+## ✨ Key Features
 
-Set `GEMMA_MODEL` in `.env`.
+### 1. AI-Powered Research Analysis
+- Analyses research papers across multiple dimensions:
+  - Research methodology
+  - Statistical reasoning
+  - Logical consistency
+  - Claims and supporting evidence
+  - Data quality
+  - Reproducibility
+  - Citation accuracy
+  - Research ethics
+  - Clarity and presentation
+- Classifies findings by severity: Critical, Major, and Minor.
+- Provides explanations and actionable suggestions for identified issues.
 
-| Model id | Notes |
+### 2. Evidence-Grounded Findings
+- Every reported issue is expected to include a direct quotation from the paper.
+- Matches quoted passages against extracted document text.
+- Tracks whether a finding can be located in the original extracted content.
+- Helps readers inspect the context behind individual findings instead of relying on unsupported AI-generated criticism.
+
+### 3. Intelligent Paper Summarisation
+Generates structured summaries containing:
+- Research question
+- Research approach
+- Key findings
+- Main contributions
+- Stated limitations
+- Relevant keywords
+
+### 4. Cross-Section Consistency Analysis
+- Compares the abstract and conclusion against the rest of the paper.
+- Identifies possible contradictions and unsupported claims.
+- Highlights overgeneralisation and conclusions that may exceed the reported evidence.
+
+### 5. Citation & Reference Verification
+- Analyses in-text citations and reference lists.
+- Identifies potentially missing, uncited, or duplicate references.
+- Supports author-year and numbered citation patterns.
+- Integrates with Crossref for optional reference metadata checks.
+- Distinguishes strong matches from ambiguous or unresolved references.
+
+### 6. Paper-Based AI Q&A
+Ask questions about an uploaded research paper and receive answers grounded in its content.
+
+- Retrieves relevant passages using keyword-based selection.
+- Uses selected paper excerpts as the model's context.
+- Provides references to supporting passages.
+- Avoids guessing when sufficient evidence cannot be found.
+
+### 7. Batch Paper Processing
+- Upload multiple research papers together.
+- Review each paper independently.
+- Track individual processing status and progress.
+- Preserve successful results even if another paper in the batch fails.
+
+### 8. Asynchronous Processing
+- Background review jobs prevent long-running analysis from blocking the application interface.
+- Concurrent model calls help process long papers more efficiently.
+- Configurable concurrency and retry handling help manage API rate limits.
+
+---
+
+## ⚙️ How It Works
+
+Reacher follows a multi-stage document analysis pipeline.
+
+| Stage | Process |
 |---|---|
-| `gemma-4-26b-a4b-it` (default) | faster, lighter on rate limits |
-| `gemma-4-31b-it` | strongest critique |
+| 01. Extraction | Extracts text from PDF, DOCX, TXT, and Markdown documents. |
+| 02. Structuring | Identifies academic sections and separates reference content. |
+| 03. Chunking | Splits long documents into manageable sections for analysis. |
+| 04. AI Review | Uses Gemma to analyse individual sections and identify potential weaknesses. |
+| 05. Grounding | Attempts to locate quoted evidence in the extracted paper text. |
+| 06. Cross-Checking | Compares abstract, conclusion, and section-level findings. |
+| 07. Citation Analysis | Checks citation consistency and optionally queries Crossref. |
+| 08. Summarisation | Generates a structured summary and overall assessment. |
+| 09. Paper Q&A | Retrieves relevant passages to answer follow-up questions. |
 
-Other settings: `MAX_NEW_TOKENS` (4096), `CHUNK_CHARS` (8000), `GEMINI_CONCURRENCY` (3 simultaneous model calls), `MAX_UPLOAD_MB` (200 per paper), `MAX_BATCH_FILES` (10), `MAX_BATCH_MB` (512 per bundle), `CROSSREF_MAILTO` (your email, for Crossref), and `PORT` (8000). Select or drop multiple PDF, DOCX, TXT, or MD files to review a bundle. Bundle reviews run one paper at a time; each paper has its own result, and a failed file does not discard successful reviews. Only one bundle can run at a time. Individual uploads are streamed to temporary files instead of being copied into application memory. Batch review results and extracted text are stored in the system temporary directory while Reacher is running and removed when it exits; individual review results remain in memory. Long-paper chunk reviews run concurrently, and each chunk now produces its factual notes and critique in one model call. The summary and cross-section check run together while citation checks overlap with model work. Large bundles may take a long time and use substantial Gemini API quota; each paper is reviewed separately. If you hit 429 rate limits, lower `GEMINI_CONCURRENCY` in `.env` to `1` or `2`; transient errors use jittered backoff, honor retry hints when possible, and cap cumulative retry delays at 60 seconds. The Gemini SDK's automatic retries are disabled so this single retry policy controls waiting. Timings for completed pipeline stages are logged.
+The pipeline is designed to make AI-generated feedback easier to inspect and verify.
 
-## How it stays accurate
+---
 
-1. **Parsing.** PDF text is read block by block with column-aware ordering. Headers, footers and the reference list are separated from the body.
-2. **Chunked review.** Long papers are split along section boundaries. Each chunk is reviewed with the abstract as context.
-3. **Verbatim anchoring.** Every finding must quote the paper. The quote is located in the document text, so each flaw is highlighted in place. Findings whose quote cannot be found are hidden by default and flagged as unverified.
-4. **Cross-section pass.** A separate pass compares abstract and conclusion claims against the rest of the paper, to catch overclaiming and contradictions.
-5. **Deduplication, severity ranking, and a calibrated verdict** built only from the confirmed findings.
-6. **Citations.** In-text markers (`[3]`, `[1–4]`, `(Smith et al., 2020)`) are matched to the reference list to find dangling and uncited entries and duplicates. Author-year citations require an exact first-author surname and year match; ambiguous same-author/year references are reported rather than silently assigned. Optional Crossref checks compare candidate title, first author, year, and any supplied DOI, ranking multiple search results instead of trusting the first hit. Only strong multi-field matches are called verified; unresolved matches and lookup failures are reported separately and are not treated as proof a source is fabricated.
-7. **Paper Q&A.** Ask follow-up questions after a review. Reacher selects relevant text passages, answers from those excerpts, and links cited evidence back to its location in the paper. If it cannot find enough support, it says so rather than guessing.
+## 🛠️ Technology Stack
 
-## Network use
+| Component | Technology |
+|---|---|
+| Backend | Python |
+| API Framework | FastAPI |
+| Server | Uvicorn |
+| AI Models | Google Gemma |
+| AI Integration | Gemini API / Google Gen AI SDK |
+| PDF Processing | PyMuPDF |
+| DOCX Processing | python-docx |
+| HTTP Client | HTTPX |
+| Environment Management | python-dotenv |
+| Frontend | HTML, CSS, JavaScript |
+| Reference Metadata | Crossref API |
 
-The paper text is sent to the Gemini API for analysis, so don't upload anything you are not allowed to share with Google. Paper Q&A sends your question, recent conversation context, and selected paper excerpts to Gemini. The optional Crossref lookup sends only reference strings (untick the box in the UI to disable it). Individual reviews are held in server memory while the app runs and are not saved to a database. Bundle reviews and extracted paper text use temporary files while the app runs; these files are removed when the app exits.
+---
 
-## Limits
+## 📁 Project Structure
 
-- Scanned PDFs need OCR first. No OCR is included.
-- Upload limits default to 200 MB per paper and 10 papers / 512 MB per bundle. You can raise or lower them in `.env`, but larger files use more disk, memory, and Gemini API quota; image-only scanned PDFs still need OCR.
-- The model can still miss flaws or misjudge them. Treat the output as a thorough first reviewer, not a verdict. The quote and fix are always shown so you can check each one.
-- "Unverified" on a reference means no close Crossref match. Preprints, books and many conference papers are not indexed there.
-- Equations, tables and figures are only seen as extracted text.
-- Q&A uses keyword-based passage selection, so it may miss evidence expressed with different terminology.
-
-## Layout
-
+```text
+static-web/
+│
+├── app/
+│   ├── __init__.py
+│   ├── analysis.py       # Research analysis and finding validation
+│   ├── citations.py      # Citation parsing and Crossref integration
+│   ├── config.py         # Application configuration
+│   ├── llm.py            # Gemini API and Gemma model integration
+│   ├── main.py           # FastAPI application and API endpoints
+│   ├── parse.py          # Document extraction and section parsing
+│   ├── prompts.py        # AI prompts and response schemas
+│   └── questions.py      # Paper-based Q&A and passage retrieval
+│
+├── static/
+│   ├── app.js            # Frontend application logic
+│   ├── index.html        # Main application interface
+│   └── style.css         # Frontend styling
+│
+├── .env.example          # Example environment variables
+├── .gitignore
+├── README.md
+├── requirements.txt
+└── run.py                # Application entry point
 ```
-run.py            launcher
-app/main.py       FastAPI server and job runner
-app/analysis.py   review pipeline, quote grounding, dedupe
-app/questions.py  paper-grounded Q&A and passage selection
-app/prompts.py    all prompts
-app/parse.py      PDF/DOCX/TXT reading and section chunking
-app/citations.py  reference parsing, cross-checks, Crossref
-app/llm.py        Gemma 4 via the Gemini API (google-genai)
-static/           the UI
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to run Reacher locally.
+
+### Prerequisites
+
+Make sure you have:
+
+- Python 3.10 or newer.
+- A Gemini API key.
+- Internet connectivity for AI inference and optional Crossref verification.
+
+No local GPU or model installation is required.
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/creatorhere/static-web.git
+cd static-web
 ```
+
+### 2. Create a Virtual Environment
+
+**Windows (PowerShell)**
+
+```powershell
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+**Linux / macOS**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install Dependencies
+
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 4. Configure Environment Variables
+
+Create a `.env` file from the provided example.
+
+**Windows**
+
+```powershell
+Copy-Item .env.example .env
+```
+
+**Linux / macOS**
+
+```bash
+cp .env.example .env
+```
+
+Add your Gemini API key:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+Get your API key from:
+
+[Google AI Studio – API Keys](https://aistudio.google.com/apikey)
+
+**Important:** Never commit your `.env` file, API keys, or private credentials to GitHub.
+
+### 5. Run the Application
+
+```bash
+python run.py
+```
+
+The application starts the local FastAPI server and attempts to open your default browser.
+
+Access Reacher at:
+
+**http://127.0.0.1:8000**
+
+---
+
+## 🔧 Configuration
+
+Reacher supports environment-based configuration through the `.env` file.
+
+| Variable | Default | Description |
+|---|---|---|
+| `GEMINI_API_KEY` | — | Gemini API authentication key |
+| `GOOGLE_API_KEY` | — | Alternative API key variable |
+| `GEMMA_MODEL` | `gemma-4-26b-a4b-it` | Model used for analysis |
+| `MAX_NEW_TOKENS` | `4096` | Maximum model output tokens |
+| `CHUNK_CHARS` | `8000` | Target chunk size for document processing |
+| `GEMINI_CONCURRENCY` | `3` | Maximum concurrent model calls |
+| `MAX_UPLOAD_MB` | `200` | Maximum individual upload size |
+| `MAX_BATCH_FILES` | `10` | Maximum papers per batch |
+| `MAX_BATCH_MB` | `512` | Maximum combined batch size |
+| `CROSSREF_MAILTO` | — | Optional email for Crossref requests |
+| `PORT` | `8000` | Local application port |
+
+Example configuration:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+
+GEMMA_MODEL=gemma-4-26b-a4b-it
+GEMINI_CONCURRENCY=3
+
+MAX_UPLOAD_MB=200
+MAX_BATCH_FILES=10
+MAX_BATCH_MB=512
+
+PORT=8000
+```
+
+If you encounter Gemini API rate limits, try reducing `GEMINI_CONCURRENCY` to `1` or `2`.
+
+---
+
+## 📄 Supported File Formats
+
+| Format | Extension | Support |
+|---|---|---|
+| PDF | `.pdf` | Text extraction using PyMuPDF |
+| Microsoft Word | `.docx` | Paragraph extraction |
+| Plain Text | `.txt` | Text-based analysis |
+| Markdown | `.md` | Text-based analysis |
+
+Multiple supported documents can be submitted together through batch processing.
+
+---
+
+## 🔐 Privacy & Data Handling
+
+Reacher uses external services for AI inference and optional reference verification.
+
+- Uploaded paper text is sent to the Gemini API for analysis.
+- Paper Q&A sends questions, recent conversation context, and selected paper passages to Gemini.
+- Optional Crossref verification sends reference strings to Crossref.
+- Individual review results are held in server memory while the application is running.
+- Batch results and extracted text are stored in temporary files and removed when the application exits.
+- The current implementation does not use a database for review storage.
+
+Do not upload confidential, copyrighted, or sensitive research documents unless you have permission to share them with the relevant external services.
+
+---
+
+## ⚠️ Current Limitations
+
+- **Scanned PDFs:** OCR is not currently included. Image-only PDFs require OCR before processing.
+- **Figures and tables:** Analysis relies on extracted text, so visual information may be missed.
+- **Model accuracy:** AI-generated findings may be incomplete or incorrect and require human verification.
+- **Reference coverage:** Crossref does not index every publication. An unresolved match does not necessarily indicate an invalid reference.
+- **Q&A retrieval:** Passage selection currently uses keyword-based retrieval and may miss relevant content expressed with different terminology.
+- **API limits:** Large papers and batches can take time and consume Gemini API quota.
+
+---
+
+## 🎯 Project Objective
+
+Reacher was developed as a practical exploration of how generative AI can support academic research and critical reading.
+
+The goal is not simply to summarise research papers, but to make the review process more structured, transparent, and useful by connecting AI-generated observations to the actual content of a document.
+
+---
+
+## 🤝 Contributing
+
+Contributions, suggestions, and improvements are welcome.
+
+If you find a bug or have an idea for improving Reacher:
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make your changes.
+4. Submit a pull request describing the improvement.
+
+For significant changes, consider opening an issue first to discuss the proposed approach.
+
+---
+
+## 📜 License
+
+No license has currently been specified for this repository. Unless a license is added, the default copyright protections apply; reuse and redistribution should not be assumed to be permitted.
+
+---
+
+**Built with Python, FastAPI, and Gemma.**  
+*Making research review more structured, transparent, and accessible.*
