@@ -12,7 +12,7 @@ Rather than simply generating a generic summary, Reacher focuses on **contextual
 
 ---
 
-## ✨ Key Features
+##   Key Features
 
 ### 1. AI-Powered Research Analysis
 - Analyses research papers across multiple dimensions:
@@ -76,7 +76,7 @@ Ask questions about an uploaded research paper and receive answers grounded in i
 
 ---
 
-## ⚙️ How It Works
+##  How It Works
 
 Reacher follows a multi-stage document analysis pipeline.
 
@@ -96,7 +96,7 @@ The pipeline is designed to make AI-generated feedback easier to inspect and ver
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 | Component | Technology |
 |---|---|
@@ -114,7 +114,7 @@ The pipeline is designed to make AI-generated feedback easier to inspect and ver
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 static-web/
@@ -144,7 +144,7 @@ static-web/
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 Follow these steps to run Reacher locally.
 
@@ -280,7 +280,7 @@ Multiple supported documents can be submitted together through batch processing.
 
 ---
 
-## 🔐 Privacy & Data Handling
+##  Privacy & Data Handling
 
 Reacher uses external services for AI inference and optional reference verification.
 
@@ -295,7 +295,7 @@ Do not upload confidential, copyrighted, or sensitive research documents unless 
 
 ---
 
-## ⚠️ Current Limitations
+##  Current Limitations
 
 - **Scanned PDFs:** OCR is not currently included. Image-only PDFs require OCR before processing.
 - **Figures and tables:** Analysis relies on extracted text, so visual information may be missed.
@@ -306,7 +306,7 @@ Do not upload confidential, copyrighted, or sensitive research documents unless 
 
 ---
 
-## 🎯 Project Objective
+##  Project Objective
 
 Reacher was developed as a practical exploration of how generative AI can support academic research and critical reading.
 
@@ -314,7 +314,7 @@ The goal is not simply to summarise research papers, but to make the review proc
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions, suggestions, and improvements are welcome.
 
@@ -329,7 +329,7 @@ For significant changes, consider opening an issue first to discuss the proposed
 
 ---
 
-## 📜 License
+##  License
 
 No license has currently been specified for this repository. Unless a license is added, the default copyright protections apply; reuse and redistribution should not be assumed to be permitted.
 
